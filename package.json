@@ -5,10 +5,16 @@
     "apps/*",
     "packages/*"
   ],
+  "scripts": {
+    "web": "bun --cwd ./frontend dev"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
   }
 }
