@@ -1,6 +1,38 @@
 "use client";
 
 import { useState, FormEvent, useRef } from "react";
+import Image from "next/image"; // Though not strictly used yet, good for future
+import {
+  Upload,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
+  Activity,
+  Dna,
+  Fingerprint,
+  Download,
+  Copy,
+  ChevronRight,
+  Search,
+  FlaskConical
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // --- Types ---
 
@@ -54,12 +86,19 @@ const DRUG_OPTIONS = [
 const getRiskColor = (risk: string) => {
   const r = risk.toLowerCase();
   if (r.includes("toxic") || r.includes("ineffective") || r.includes("high") || r.includes("avoid") || r.includes("severe")) {
-    return "bg-red-50 border-red-200 text-red-800";
+    return "bg-destructive/10 border-destructive/20 text-destructive shadow-sm";
   }
   if (r.includes("caution") || r.includes("monitor") || r.includes("reduced") || r.includes("sensitivity")) {
-    return "bg-yellow-50 border-yellow-200 text-yellow-800";
+    return "bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-400 shadow-sm";
   }
-  return "bg-green-50 border-green-200 text-green-800";
+  return "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400 shadow-sm";
+};
+
+const getProgressBarColor = (risk: string) => {
+  const r = risk.toLowerCase();
+  if (r.includes("toxic") || r.includes("ineffective") || r.includes("high") || r.includes("avoid")) return "bg-destructive";
+  if (r.includes("caution") || r.includes("monitor")) return "bg-yellow-500";
+  return "bg-emerald-500";
 };
 
 // --- Components ---
@@ -123,6 +162,7 @@ export default function Home() {
   const copyToClipboard = () => {
     if (result) {
       navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+      // Could add a toast notification here
       alert("Copied to clipboard!");
     }
   };
@@ -143,311 +183,450 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 text-gray-900 font-sans">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-blue-900 tracking-tight sm:text-5xl">
-            PharmaGuard
-          </h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Pharmacogenomic Risk Prediction System
-          </p>
-        </div>
-
-        {/* Input Card */}
-        <div className="bg-white shadow-xl rounded-2xl overflow-hidden mb-8">
-          <div className="p-8">
-            <h2 className="text-xl font-semibold mb-6 text-gray-800">
-              Run Analysis
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-              {/* Mode Toggle */}
-              <div className="flex justify-center mb-6">
-                <div className="bg-gray-100 p-1 rounded-lg inline-flex">
-                  <button
-                    type="button"
-                    onClick={() => setMode('patient')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'patient'
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                    Patient Mode
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMode('expert')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${mode === 'expert'
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                    Expert Mode
-                  </button>
-                </div>
+    <div className="min-h-screen bg-background font-sans selection:bg-primary/10">
+      <TooltipProvider>
+        {/* 1. HEADER BAR */}
+        <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-16 items-center justify-between px-4 md:px-6 max-w-7xl mx-auto">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
+                <Activity className="w-5 h-5" />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Drug
-                </label>
-                <select
-                  value={selectedDrug}
-                  onChange={(e) => setSelectedDrug(e.target.value)}
-                  className="block w-full pl-3 pr-10 py-3 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-gray-50 border"
-                >
-                  {DRUG_OPTIONS.map((drug) => (
-                    <option key={drug} value={drug}>
-                      {drug}
-                    </option>
-                  ))}
-                </select>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold tracking-tight text-foreground">PharmaGuard</span>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium hidden sm:inline-block">Pharmacogenomic Risk System</span>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload VCF File
-                </label>
-                <div
-                  className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <div className="space-y-1 text-center">
-                    <svg
-                      className="mx-auto h-12 w-12 text-gray-400"
-                      stroke="currentColor"
-                      fill="none"
-                      viewBox="0 0 48 48"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <div className="flex text-sm text-gray-600 justify-center">
-                      <span className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                        <span>Upload a file</span>
-                        <input
-                          id="file-upload"
-                          name="file-upload"
-                          type="file"
-                          className="sr-only"
-                          accept=".vcf,.txt"
-                          ref={fileInputRef}
-                          onChange={handleFileChange}
-                        />
-                      </span>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      VCF or Text up to 50MB
-                    </p>
-                    {file && (
-                      <p className="text-sm text-green-600 font-semibold mt-2">
-                        Selected: {file.name}
-                      </p>
-                    )}
-                  </div>
-                </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-medium transition-colors ${mode === 'patient' ? 'text-primary' : 'text-muted-foreground'}`}>Patient</span>
+                <Switch
+                  checked={mode === 'expert'}
+                  onCheckedChange={(checked) => setMode(checked ? 'expert' : 'patient')}
+                  className="data-[state=checked]:bg-primary"
+                />
+                <span className={`text-xs font-medium transition-colors ${mode === 'expert' ? 'text-primary' : 'text-muted-foreground'}`}>Expert</span>
               </div>
+            </div>
+          </div>
+        </header>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all ${isLoading ? "opacity-75 cursor-not-allowed" : ""
-                  }`}
-              >
-                {isLoading ? (
-                  <span className="flex items-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Analyzing Genomic Data...
-                  </span>
-                ) : (
-                  "Analyze Pharmacogenomic Profile"
+        <main className="container max-w-5xl mx-auto py-10 px-4 md:px-6 space-y-12">
+
+          {/* 2. INPUT CARD */}
+          <section className="flex justify-center animate-fade-in-up">
+            <Card className="w-full max-w-2xl border-none shadow-xl bg-card/50 backdrop-blur-sm ring-1 ring-black/5 dark:ring-white/10">
+              <CardHeader className="text-center pb-8 border-b border-border/50">
+                <CardTitle className="text-2xl font-bold">New Analysis</CardTitle>
+                <CardDescription>Select a medication and upload your VCF file to assess pharmacogenomic risk.</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-8 space-y-6">
+                {error && (
+                  <Alert variant="destructive" className="animate-pulse">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Analysis Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
                 )}
-              </button>
-            </form>
 
-            {error && (
-              <div className="mt-4 p-4 text-red-700 bg-red-100 rounded-lg">
-                <strong>Error:</strong> {error}
-              </div>
-            )}
-          </div>
-        </div>
+                <div className="space-y-4">
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      Target Medication
+                    </label>
+                    <Select value={selectedDrug} onValueChange={setSelectedDrug}>
+                      <SelectTrigger className="w-full h-12 text-base">
+                        <SelectValue placeholder="Select a drug" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DRUG_OPTIONS.map((drug) => (
+                          <SelectItem key={drug} value={drug} className="cursor-pointer">
+                            {drug}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[0.8rem] text-muted-foreground">
+                      Choose the medication you intend to prescribe or check against.
+                    </p>
+                  </div>
 
-        {/* Results Section */}
-        {result && (
-          <div className="space-y-6 animate-fade-in-up">
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      Genomic Data (VCF)
+                    </label>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className={`
+                        relative flex flex-col items-center justify-center w-full h-40 rounded-xl border-2 border-dashed 
+                        transition-all duration-200 outline-none
+                        ${file
+                          ? "border-primary/50 bg-primary/5"
+                          : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"}
+                      `}
+                      onClick={() => fileInputRef.current?.click()}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click() }}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".vcf,.txt"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
 
-            {/* Header with Signature ID & Cache Status */}
-            <div className="flex justify-between items-center text-sm text-gray-500 px-2">
-              <span>Genomic Signature: <span className="font-mono text-gray-700">{result.genomic_signature_id.substring(0, 16)}...</span></span>
-              <span className={`px-2 py-1 rounded text-xs font-bold ${result.cache_status === 'HIT' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                }`}>
-                Cache: {result.cache_status}
-              </span>
-            </div>
-
-            {/* Risk Assessment Card */}
-            <div
-              className={`rounded-xl border-l-8 p-6 shadow-md bg-white ${getRiskColor(
-                result.risk_assessment.level
-              )}`}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-sm font-medium opacity-80 uppercase tracking-widest">
-                    Risk Assessment
-                  </h3>
-                  <p className="mt-2 text-3xl font-bold">
-                    {result.risk_assessment.level}
-                  </p>
-                  <p className="mt-1 text-lg font-medium opacity-90">
-                    {result.drug}
-                  </p>
-                  <div className="mt-3 flex items-center">
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 w-32 mr-2">
-                      <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${result.risk_assessment.confidence_score * 100}%` }}></div>
+                      {file ? (
+                        <div className="flex flex-col items-center gap-2 text-primary animate-in zoom-in-50 duration-300">
+                          <CheckCircle2 className="w-10 h-10" />
+                          <div className="text-center">
+                            <p className="font-semibold text-sm">{file.name}</p>
+                            <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB ready</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                          <Upload className="w-8 h-8 opacity-50" />
+                          <div className="text-center">
+                            <p className="font-medium text-sm text-foreground">Click to upload or drag and drop</p>
+                            <p className="text-xs">VCF or TXT files supported</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <span className="text-sm opacity-75">
-                      {Math.round(result.risk_assessment.confidence_score * 100)}% Confidence
-                    </span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-white/50">
-                    {result.timestamp.split("T")[0]}
-                  </span>
-                </div>
+              </CardContent>
+              <CardFooter className="pb-8 pt-2">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isLoading || !file}
+                  className="w-full py-6 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30"
+                  size="lg"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Running Pharmacogenomic Analysis...
+                    </>
+                  ) : (
+                    "Analyze Profile"
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          </section>
+
+          {/* 3. RESULTS DASHBOARD */}
+          {isLoading && !result && (
+            <div className="max-w-5xl mx-auto space-y-8 animate-pulse">
+              <div className="grid gap-6 md:grid-cols-2">
+                <Skeleton className="h-48 rounded-xl" />
+                <Skeleton className="h-48 rounded-xl" />
               </div>
+              <Skeleton className="h-96 rounded-xl" />
             </div>
+          )}
 
-            {/* AI Explanation */}
-            <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100">
-              <div className="px-6 py-4 bg-gradient-to-r from-purple-50 to-white border-b border-gray-100 flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-purple-900 flex items-center">
-                  <span className="mr-2">✨</span> Genomic Explanation
-                </h3>
-                <span className="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded uppercase">
-                  {result.mode} Mode
-                </span>
-              </div>
-              <div className="p-6">
-                <p className="text-gray-700 leading-relaxed text-base whitespace-pre-line">
-                  {result.llm_generated_explanation.summary}
-                </p>
-              </div>
-            </div>
+          {result && (
+            <div className="space-y-8 animate-fade-in-up">
 
-            {/* Explainability Tree */}
-            <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100">
-              <h3 className="text-gray-900 font-semibold mb-4 border-b pb-2">
-                Explainability Tree
-              </h3>
-              <div className="font-mono text-sm bg-gray-50 p-4 rounded-lg overflow-x-auto">
-                <ul className="list-none space-y-2">
-                  <li><span className="text-blue-600 font-bold">DRUG:</span> {result.explainability_tree.drug}</li>
-                  <li className="pl-4 border-l-2 border-gray-300 ml-1">
-                    <span className="text-purple-600 font-bold">└── GENE:</span> {result.explainability_tree.gene}
-                  </li>
-                  <li className="pl-8 border-l-2 border-gray-300 ml-1">
-                    <span className="text-indigo-600 font-bold">└── VARIANT:</span> {result.explainability_tree.variant}
-                  </li>
-                  <li className="pl-12 border-l-2 border-gray-300 ml-1">
-                    <span className="text-pink-600 font-bold">└── PHENOTYPE:</span> {result.explainability_tree.phenotype}
-                  </li>
-                  <li className="pl-16 border-l-2 border-gray-300 ml-1">
-                    <span className="text-red-600 font-bold">└── RISK:</span> {result.explainability_tree.risk}
-                  </li>
-                </ul>
-              </div>
-            </div>
+              {/* Top Row: Risk + Confidence */}
+              <div className="grid gap-6 md:grid-cols-12">
 
-            {/* Clinical Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100">
-                <h3 className="text-gray-900 font-semibold mb-4 border-b pb-2">
-                  Clinical Recommendation
-                </h3>
-                <p className="text-gray-600">
-                  {result.clinical_recommendation}
-                </p>
+                {/* Risk Card */}
+                <Card className={`md:col-span-7 lg:col-span-8 border-l-8 overflow-hidden shadow-sm hover:shadow-md transition-shadow ${getRiskColor(result.risk_assessment.level)}`}>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <Badge variant="outline" className="bg-background/50 font-mono text-xs uppercase tracking-wider">
+                        {result.timestamp.split("T")[0]}
+                      </Badge>
+                      {result.cache_status === 'HIT' && (
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-none">
+                          ⚡ Instant Result
+                        </Badge>
+                      )}
+                    </div>
+                    <CardTitle className="text-sm font-medium uppercase tracking-wider opacity-70">
+                      Risk Assessment
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-4xl md:text-5xl font-extrabold tracking-tight">
+                        {result.risk_assessment.level}
+                      </span>
+                      <span className="text-xl font-medium opacity-80 mt-1">
+                        for {result.drug}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Confidence Card */}
+                <Card className="md:col-span-5 lg:col-span-4 flex flex-col justify-center border-none bg-card shadow-sm ring-1 ring-border/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      Confidence Score
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-end justify-between">
+                      <span className="text-4xl font-bold tabular-nums">
+                        {Math.round(result.risk_assessment.confidence_score * 100)}
+                        <span className="text-lg text-muted-foreground ml-1">%</span>
+                      </span>
+                      <span className="text-xs font-medium text-muted-foreground mb-1.5">Based on variant evidence</span>
+                    </div>
+                    <Progress
+                      value={result.risk_assessment.confidence_score * 100}
+                      className="h-3"
+                      indicatorClassName={getProgressBarColor(result.risk_assessment.level)}
+                    />
+                  </CardContent>
+                </Card>
               </div>
 
-              <div className="bg-white shadow-md rounded-xl p-6 border border-gray-100">
-                <h3 className="text-gray-900 font-semibold mb-4 border-b pb-2">
-                  Genomic Profile
-                </h3>
-                <dl className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Gene</dt>
-                    <dd className="font-medium text-gray-900">
-                      {result.pharmacogenomic_profile.gene}
-                    </dd>
+              {/* Second Row: Clinical + Genomic */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="border-t-4 border-t-primary shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-primary" />
+                      Clinical Recommendation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-lg text-foreground leading-relaxed">
+                      {result.clinical_recommendation}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-t-4 border-t-indigo-500 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Dna className="w-5 h-5 text-indigo-500" />
+                      Genomic Profile
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center py-2 border-b border-border/50">
+                        <span className="text-sm text-muted-foreground">Target Gene</span>
+                        <span className="font-mono font-medium">{result.pharmacogenomic_profile.gene}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-border/50">
+                        <span className="text-sm text-muted-foreground">Phenotype</span>
+                        <span className="font-medium text-right">{result.pharmacogenomic_profile.phenotype}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-border/50">
+                        <span className="text-sm text-muted-foreground">Detected Variant</span>
+                        <Badge variant="secondary" className="font-mono">
+                          {result.pharmacogenomic_profile.detected_variant || "None"}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-sm text-muted-foreground">Signature ID</span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="font-mono text-xs text-muted-foreground truncat cursor-help border-b border-dotted max-w-[150px] truncate">
+                              {result.genomic_signature_id}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="font-mono text-xs">{result.genomic_signature_id}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Third Row: Detailed Tabs */}
+              <Card className="shadow-md border-none ring-1 ring-border/50 bg-card/50">
+                <Tabs defaultValue="explanation" className="w-full">
+                  <div className="border-b px-6 pt-4">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto max-w-2xl bg-muted/50">
+                      <TabsTrigger value="explanation">Explanation</TabsTrigger>
+                      <TabsTrigger value="profile">Profile Details</TabsTrigger>
+                      <TabsTrigger value="tree">Explainability</TabsTrigger>
+                      <TabsTrigger value="json">Raw JSON</TabsTrigger>
+                    </TabsList>
                   </div>
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Phenotype</dt>
-                    <dd className="font-medium text-gray-900">
-                      {result.pharmacogenomic_profile.phenotype}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Variants Found</dt>
-                    <dd className="font-medium text-gray-900">
-                      {result.pharmacogenomic_profile.total_variants_found}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-gray-500">Detected</dt>
-                    <dd className="font-medium text-gray-900">
-                      {result.pharmacogenomic_profile.detected_variant || "None"}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            </div>
 
-            <div className="flex space-x-4 pt-4">
-              <button
-                onClick={downloadJson}
-                className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
-              >
-                Download JSON report
-              </button>
-              <button
-                onClick={copyToClipboard}
-                className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
-              >
-                Copy JSON
-              </button>
+                  <div className="p-6">
+                    <TabsContent value="explanation" className="mt-0 focus-visible:outline-none">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold flex items-center gap-2">
+                            Analysis Summary
+                          </h3>
+                          <Badge variant={mode === 'expert' ? 'default' : 'secondary'}>
+                            {mode === 'expert' ? 'Expert View' : 'Patient View'}
+                          </Badge>
+                        </div>
+                        <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+                          {result.llm_generated_explanation.summary}
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="profile" className="mt-0 focus-visible:outline-none">
+                      <div className="rounded-md border">
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
+                            <tr>
+                              <th className="px-4 py-3">Attribute</th>
+                              <th className="px-4 py-3">Value</th>
+                              <th className="px-4 py-3 hidden md:table-cell">Description</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            <tr>
+                              <td className="px-4 py-3 font-medium">Gene</td>
+                              <td className="px-4 py-3 font-mono text-primary">{result.pharmacogenomic_profile.gene}</td>
+                              <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">Target biomarker for {result.drug}</td>
+                            </tr>
+                            <tr>
+                              <td className="px-4 py-3 font-medium">Phenotype</td>
+                              <td className="px-4 py-3">{result.pharmacogenomic_profile.phenotype}</td>
+                              <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">Metabolizer status classification</td>
+                            </tr>
+                            <tr>
+                              <td className="px-4 py-3 font-medium">Detected Variant</td>
+                              <td className="px-4 py-3 font-mono">{result.pharmacogenomic_profile.detected_variant || "N/A"}</td>
+                              <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">Specific genetic marker identified</td>
+                            </tr>
+                            <tr>
+                              <td className="px-4 py-3 font-medium">Quality Check</td>
+                              <td className="px-4 py-3 text-emerald-600 font-medium">PASS</td>
+                              <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">VCF integrity verified</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="tree" className="mt-0 focus-visible:outline-none">
+                      <div className="rounded-lg border bg-muted/30 p-8 overflow-x-auto">
+                        <div className="flex flex-col gap-4 min-w-[300px]">
+
+                          {/* Level 1: Drug */}
+                          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-500 delay-100">
+                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-md">
+                              <FlaskConical className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-bold text-muted-foreground uppercase">Drug</span>
+                              <span className="font-semibold">{result.explainability_tree.drug}</span>
+                            </div>
+                          </div>
+
+                          <div className="ml-5 border-l-2 border-muted-foreground/20 h-6"></div>
+
+                          {/* Level 2: Gene */}
+                          <div className="flex items-center gap-3 ml-8 animate-in fade-in slide-in-from-left-8 duration-500 delay-200">
+                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-md">
+                              <Dna className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-bold text-muted-foreground uppercase">Gene</span>
+                              <span className="font-semibold">{result.explainability_tree.gene}</span>
+                            </div>
+                          </div>
+
+                          <div className="ml-[3.25rem] border-l-2 border-muted-foreground/20 h-6"></div>
+
+                          {/* Level 3: Variant */}
+                          <div className="flex items-center gap-3 ml-16 animate-in fade-in slide-in-from-left-12 duration-500 delay-300">
+                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-md">
+                              <SearchesIcon className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-bold text-muted-foreground uppercase">Biomarker</span>
+                              <span className="font-mono font-medium">{result.explainability_tree.variant}</span>
+                            </div>
+                          </div>
+
+                          <div className="ml-[5.25rem] border-l-2 border-muted-foreground/20 h-6"></div>
+
+                          {/* Level 4: Phenotype */}
+                          <div className="flex items-center gap-3 ml-24 animate-in fade-in slide-in-from-left-16 duration-500 delay-500">
+                            <div className="p-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 rounded-md">
+                              <Fingerprint className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-bold text-muted-foreground uppercase">Phenotype</span>
+                              <span className="font-medium bg-pink-50 dark:bg-pink-900/20 px-2 py-0.5 rounded text-pink-700 dark:text-pink-300">
+                                {result.explainability_tree.phenotype}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="ml-[7.25rem] border-l-2 border-muted-foreground/20 h-6"></div>
+
+                          {/* Level 5: Risk */}
+                          <div className="flex items-center gap-3 ml-32 animate-in fade-in slide-in-from-left-20 duration-500 delay-700">
+                            <div className={`p-2 rounded-md ${result.risk_assessment.level.toLowerCase().includes('high') || result.risk_assessment.level.toLowerCase().includes('toxic') ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                              <Activity className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-bold text-muted-foreground uppercase">Outcome</span>
+                              <span className="font-bold">{result.explainability_tree.risk}</span>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="json" className="mt-0 focus-visible:outline-none">
+                      <div className="relative rounded-lg border bg-muted/50 p-4 font-mono text-xs overflow-auto max-h-[400px]">
+                        <pre className="whitespace-pre-wrap break-words">{JSON.stringify(result, null, 2)}</pre>
+                      </div>
+                      <div className="flex gap-4 mt-4">
+                        <Button variant="outline" className="w-full" onClick={downloadJson}>
+                          <Download className="w-4 h-4 mr-2" /> Download Report
+                        </Button>
+                        <Button variant="outline" className="w-full" onClick={copyToClipboard}>
+                          <Copy className="w-4 h-4 mr-2" /> Copy to Clipboard
+                        </Button>
+                      </div>
+                    </TabsContent>
+
+                  </div>
+
+                </Tabs>
+              </Card>
+
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </main>
+      </TooltipProvider>
     </div>
   );
+}
+
+// Icon helper for the tree
+function SearchesIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  )
 }

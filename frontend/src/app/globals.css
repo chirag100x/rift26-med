@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+
+/* ... */
+
+@plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -47,48 +50,54 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-@layer utilities {
-  .animate-fade-in-up {
-    animation: fadeInUp 0.5s ease-out forwards;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.147 0.004 49.25);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.147 0.004 49.25);
+  /* Premium Clinical Palette - Light Mode */
+  /* Base: Clean White & Soft Gray */
+  --background: oklch(0.99 0 0);       /* #fcfcfc */
+  --foreground: oklch(0.25 0.02 260);  /* Deep Navy/Black #1a1e2e */
+
+  /* Surface: Crisp Cards */
+  --card: oklch(1 0 0);                /* #ffffff */
+  --card-foreground: oklch(0.25 0.02 260);
+
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.147 0.004 49.25);
-  --primary: oklch(0.56 0.25 302);
-  --primary-foreground: oklch(0.98 0.01 308);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0.001 106.424);
-  --muted-foreground: oklch(0.553 0.013 58.071);
-  --accent: oklch(0.97 0.001 106.424);
-  --accent-foreground: oklch(0.216 0.006 56.043);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.923 0.003 48.717);
-  --input: oklch(0.923 0.003 48.717);
-  --ring: oklch(0.709 0.01 56.259);
-  --chart-1: oklch(0.83 0.11 306);
-  --chart-2: oklch(0.72 0.18 306);
-  --chart-3: oklch(0.63 0.23 304);
-  --chart-4: oklch(0.56 0.25 302);
-  --chart-5: oklch(0.50 0.24 302);
-  --radius: 0.625rem;
+  --popover-foreground: oklch(0.25 0.02 260);
+
+  /* Primary: Trustworthy Medical Blue */
+  /* Using a vibrant but professional blue */
+  --primary: oklch(0.55 0.18 255);     /* #2563EB approx, clearer blue */
+  --primary-foreground: oklch(0.99 0 0);
+
+  /* Secondary: Soft Slate/Blue for subtle elements */
+  --secondary: oklch(0.95 0.03 250);   /* #f1f5f9 */
+  --secondary-foreground: oklch(0.35 0.05 255);
+
+  /* Muted: De-emphasized text */
+  --muted: oklch(0.96 0.01 250);
+  --muted-foreground: oklch(0.55 0.04 250);
+
+  /* Accent: Hover states, slight highlight */
+  --accent: oklch(0.94 0.03 250);
+  --accent-foreground: oklch(0.25 0.02 260);
+
+  /* Destructive: Urgent Red */
+  --destructive: oklch(0.6 0.18 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  /* Border: Subtle separation */
+  --border: oklch(0.92 0.02 250);
+  --input: oklch(0.92 0.02 250);
+  --ring: oklch(0.55 0.18 255);
+
+  /* Risk Colors (Custom Utility Classes will use these indirectly or directly) */
+  --chart-1: oklch(0.65 0.18 150); /* Green - Safe */
+  --chart-2: oklch(0.75 0.15 85);  /* Yellow - Caution */
+  --chart-3: oklch(0.6 0.2 25);    /* Red - Danger */
+  --chart-4: oklch(0.55 0.18 255); /* Blue */
+  --chart-5: oklch(0.5 0.1 260);   /* Navy */
+
+  --radius: 0.75rem; /* 12px for rounded-xl feel */
+
   --sidebar: oklch(0.985 0.001 106.423);
   --sidebar-foreground: oklch(0.147 0.004 49.25);
   --sidebar-primary: oklch(0.56 0.25 302);
@@ -100,36 +109,48 @@
 }
 
 .dark {
-  --background: oklch(0.147 0.004 49.25);
-  --foreground: oklch(0.985 0.001 106.423);
-  --card: oklch(0.216 0.006 56.043);
-  --card-foreground: oklch(0.985 0.001 106.423);
-  --popover: oklch(0.216 0.006 56.043);
-  --popover-foreground: oklch(0.985 0.001 106.423);
-  --primary: oklch(0.63 0.23 304);
-  --primary-foreground: oklch(0.98 0.01 308);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.268 0.007 34.298);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.268 0.007 34.298);
-  --accent-foreground: oklch(0.985 0.001 106.423);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.553 0.013 58.071);
-  --chart-1: oklch(0.83 0.11 306);
-  --chart-2: oklch(0.72 0.18 306);
-  --chart-3: oklch(0.63 0.23 304);
-  --chart-4: oklch(0.56 0.25 302);
-  --chart-5: oklch(0.50 0.24 302);
+  /* Premium Clinical Palette - Dark Mode */
+  --background: oklch(0.15 0.02 260);  /* Deep Blue-Grey */
+  --foreground: oklch(0.98 0.01 250);
+
+  --card: oklch(0.2 0.03 260);
+  --card-foreground: oklch(0.98 0.01 250);
+
+  --popover: oklch(0.2 0.03 260);
+  --popover-foreground: oklch(0.98 0.01 250);
+
+  --primary: oklch(0.65 0.18 255);
+  --primary-foreground: oklch(0.99 0 0);
+
+  --secondary: oklch(0.25 0.04 255);
+  --secondary-foreground: oklch(0.98 0.01 250);
+
+  --muted: oklch(0.25 0.03 260);
+  --muted-foreground: oklch(0.7 0.04 250);
+
+  --accent: oklch(0.25 0.04 255);
+  --accent-foreground: oklch(0.98 0.01 250);
+
+  --destructive: oklch(0.4 0.15 25);
+  --destructive-foreground: oklch(0.98 0.01 250);
+
+  --border: oklch(0.3 0.03 260);
+  --input: oklch(0.3 0.03 260);
+  --ring: oklch(0.55 0.18 255);
+
+  --chart-1: oklch(0.65 0.18 150);
+  --chart-2: oklch(0.75 0.15 85);
+  --chart-3: oklch(0.6 0.2 25);
+  --chart-4: oklch(0.55 0.18 255);
+  --chart-5: oklch(0.5 0.1 260);
+
   --sidebar: oklch(0.216 0.006 56.043);
   --sidebar-foreground: oklch(0.985 0.001 106.423);
   --sidebar-primary: oklch(0.72 0.18 306);
   --sidebar-primary-foreground: oklch(0.98 0.01 308);
   --sidebar-accent: oklch(0.268 0.007 34.298);
   --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-border: oklch(0.268 0.007 34.298);
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
@@ -138,6 +159,27 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+  
+  .glass-card {
+    @apply bg-white/80 dark:bg-black/50 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-xl;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
