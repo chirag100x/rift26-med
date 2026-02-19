@@ -1,7 +1,7 @@
-import { ComponentExample } from "@/components/component-example";
+/** @format */
 
-export function App() {
-return <ComponentExample />;
-}
+const App = () => {
+  return <div>App</div>;
+};
 
 export default App;
