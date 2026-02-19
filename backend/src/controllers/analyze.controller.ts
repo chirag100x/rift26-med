@@ -57,10 +57,14 @@ export class AnalyzeController {
             const cacheKey = `${signature}:${drug.toUpperCase()}:${mode}`;
 
             // 4. Check Cache (Level 1)
-            const cachedResult = cacheService.get(cacheKey);
-            if (cachedResult) {
+            let cachedResult = cacheService.get(cacheKey);
+
+            // Check if cached result has a valid explanation. If it was an error message, ignore cache.
+            if (cachedResult &&
+                cachedResult.llm_generated_explanation?.summary &&
+                !cachedResult.llm_generated_explanation.summary.includes('temporarily unavailable')) {
+
                 // Return cached JSON
-                // Update timestamp? Or return cached timestamp? Use current.
                 res.json({
                     ...cachedResult,
                     timestamp: new Date().toISOString(),
@@ -120,8 +124,10 @@ export class AnalyzeController {
                 cache_status: 'MISS'
             };
 
-            // 8. Store in Cache
-            cacheService.set(cacheKey, response);
+            // 8. Store in Cache ONLY if explanation is valid
+            if (!llmExplanation.includes('temporarily unavailable')) {
+                cacheService.set(cacheKey, response);
+            }
 
             res.json(response);
 

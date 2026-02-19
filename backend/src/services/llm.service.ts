@@ -16,7 +16,7 @@ const groq = new Groq({
 });
 
 export class LlmService {
-    private readonly MODEL = 'llama3-70b-8192';
+    private readonly MODEL = 'llama-3.3-70b-versatile';
     private readonly TIMEOUT_MS = 8000; // 8 seconds timeout
 
     /**
