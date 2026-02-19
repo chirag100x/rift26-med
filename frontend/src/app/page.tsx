@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, useRef } from "react";
+import { useState, FormEvent, useRef, useEffect } from "react";
 import Image from "next/image";
 import {
   Upload,
@@ -208,21 +208,19 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!file) {
-      setError("Please select a VCF file.");
-      return;
-    }
+  // Refactored to allow calling from both submit and mode toggle
+  const runAnalysis = async (currentFile: File, currentDrug: string, currentMode: 'patient' | 'expert') => {
     setError(null);
     setIsLoading(true);
-    setResult(null);
+    // Keep previous result visible while loading new one if it exists, or clear if you prefer
+    // setResult(null); 
 
     try {
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("drug", selectedDrug);
-      formData.append("mode", mode);
+      // Append primitives first for reliable parsing
+      formData.append("drug", currentDrug);
+      formData.append("mode", currentMode);
+      formData.append("file", currentFile);
 
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -245,10 +243,28 @@ export default function Home() {
         errorMessage = err;
       }
       setError(errorMessage);
+      setResult(null); // Clear result on error
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!file) {
+      setError("Please select a VCF file.");
+      return;
+    }
+    await runAnalysis(file, selectedDrug, mode);
+  };
+
+  // Trigger re-analysis when mode changes, ONLY if we already have a result displayed.
+  // This ensures the view updates "responsively" to the toggle.
+  useEffect(() => {
+    if (file && result) {
+      runAnalysis(file, selectedDrug, mode);
+    }
+  }, [mode]); // Re-run whenever 'mode' changes
 
   const copyToClipboard = () => {
     if (result) {
@@ -290,13 +306,23 @@ export default function Home() {
 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className={`text-xs font-medium transition-colors ${mode === 'patient' ? 'text-primary' : 'text-muted-foreground'}`}>Patient</span>
+                <span
+                  onClick={() => setMode('patient')}
+                  className={`cursor-pointer text-xs font-medium transition-colors ${mode === 'patient' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  Patient
+                </span>
                 <Switch
                   checked={mode === 'expert'}
                   onCheckedChange={(checked) => setMode(checked ? 'expert' : 'patient')}
                   className="data-[state=checked]:bg-primary"
                 />
-                <span className={`text-xs font-medium transition-colors ${mode === 'expert' ? 'text-primary' : 'text-muted-foreground'}`}>Expert</span>
+                <span
+                  onClick={() => setMode('expert')}
+                  className={`cursor-pointer text-xs font-medium transition-colors ${mode === 'expert' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  Expert
+                </span>
               </div>
             </div>
           </div>
@@ -420,7 +446,7 @@ export default function Home() {
           )}
 
           {result && (
-            <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className={`flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500 transition-opacity ${isLoading ? 'opacity-60 grayscale-[30%] pointer-events-none' : ''}`}>
 
               {/* Row 1: Risk + Confidence */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">

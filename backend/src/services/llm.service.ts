@@ -72,21 +72,28 @@ Clinical Recommendation: ${context.recommendation}
             return `
 ${baseContext}
 
-Please provide a highly technical clinical explanation.
-- Include specific rsIDs and star alleles if available.
-- Describe the enzyme activity impact and metabolic pathway.
-- Use precise clinical terminology.
-- Explain the pharmacokinetics behind the risk match.
+Please provide a highly technical clinical explanation for a clinician/pharmacist.
+- CITATIONS: You MUST include specific rsIDs (e.g., rs12345) and star alleles (e.g., *1/*17) if they are known for this gene/variant.
+- MECHANISM: Describe the specific enzyme activity impact (e.g., "reduced catalytic activity of CYP2C19").
+- PATHWAY: specific metabolic pathway details (e.g., "impaired conversion of prodrug to active metabolite").
+- GUIDELINES: Reference standard CPIC or DPWG guidelines where relevant.
+- PHARMACOKINETICS: Explain the pharmacokinetic consequences (AUC, clearance, half-life changes).
+- TONE: Professional, concise, medical terminology.
 `;
         } else {
             return `
 ${baseContext}
 
-Please provide a simple, patient-friendly explanation.
-- Avoid heavy jargon.
-- Explain in simple 3-4 sentences.
-- Do not focus on rsID technical details.
-- Focus on what this means for their treatment safety.
+Please provide a very simple, reassuring explanation for a patient who has no medical training.
+- ANALOGY: Use a simple analogy if helpful (e.g., "traffic jam", "broken key").
+- CLARITY: Do NOT use complex medical jargon like "pharmacokinetics" or "metabolic pathways" without immediately simplifying it.
+- FOCUS: Focus purely on "Is this medicine safe for me?" and "Do I need a different dose?".
+- TONE: Empathetic, clear, calm.
+- STRUCTURE: 
+  1. What we found (simple terms).
+  2. What it means for this medicine.
+  3. Simple next step (e.g. "Discuss with your doctor").
+- Do not mention rsIDs or star alleles.
 `;
         }
     }
