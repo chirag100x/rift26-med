@@ -5,7 +5,7 @@
 > AI-powered VCF variant analysis for personalized drug-gene interaction insights.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit-blue?style=for-the-badge)](https://rift26-med-frontend.vercel.app/)
-[![LinkedIn Video](https://img.shields.io/badge/LinkedIn-Demo%20Video-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/posts/your-linkedin-post-id)
+[![LinkedIn Video](https://img.shields.io/badge/LinkedIn-Demo%20Video-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/posts/chirag-choudhary-4156b2376_rift2026-pharmaguard-pharmacogenomics-ugcPost-7430413395474022400-Ap_x?utm_source=social_share_send&utm_medium=android_app&rcm=ACoAAF0B8tEBU4ytzaemY1edNDyWdCooGPVgNnY&utm_campaign=copy_link)
 
 ---
 
